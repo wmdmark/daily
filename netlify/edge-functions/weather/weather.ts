@@ -3,7 +3,7 @@ import { getWeather, getWeatherInputData } from "./utils.ts"
 import {
   stringify,
   parse as parseYaml,
-} from "https://deno.land/std@0.63.0/encoding/yaml.ts"
+} from "https://deno.land/std@0.99.0/encoding/yaml.ts"
 import { getImage } from "./images.ts"
 
 if (!Deno.env.get("OPENAI_API_KEY")) {
@@ -26,7 +26,8 @@ const OpenAIStream = async (payload: any) => {
   })
 
   if (!openAiResponse.ok) {
-    return new Response("OpenAI error", { status: 500 })
+    console.log(openAiResponse)
+    throw new Error("OpenAI error")
   }
 
   return openAiResponse.body
@@ -102,6 +103,7 @@ export default async (request: Request, context: Context) => {
     }
 
     const readableStream: any = await OpenAIStream(payload)
+
     const { readable, writable } = new TransformStream()
 
     // now we want to parse the readable stream and send it to the client

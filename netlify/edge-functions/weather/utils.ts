@@ -36,7 +36,6 @@ export function celsiusToFahrenheit(celsius: number): number {
 }
 
 export const getWeatherInputData = (weatherData: any) => {
-  console.log(weatherData)
   const current = weatherData.currentWeather
 
   const forecastData = {
