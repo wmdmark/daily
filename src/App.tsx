@@ -136,9 +136,11 @@ function Poem() {
             as={motion.div}
             width="full"
             height="full"
-            position="absolute"
+            position="fixed"
             top={0}
             left={0}
+            bottom={0}
+            right={0}
             filter="blur(8px)"
             backgroundImage={`url(${image})`}
             backgroundSize="cover"
@@ -157,8 +159,8 @@ function Poem() {
         backdropBlur={"20px"}
         rounded="2xl"
         boxShadow={"2xl"}
-        paddingX={14}
-        paddingY={8}
+        paddingX={[6, 7, 14]}
+        paddingY={[6, 7, 14]}
       >
         {data?.title && (
           <Heading fontFamily={"georgia"} textAlign="center">
@@ -167,10 +169,10 @@ function Poem() {
         )}
         {data?.poem && (
           <Text
-            fontSize={"2xl"}
+            fontSize={["md", "lg", "2xl"]}
             fontFamily={"georgia"}
-            lineHeight="50px"
-            w="80%"
+            lineHeight={[8, 9, 10]}
+            w={"85%"}
             marginX="auto"
           >
             {poemLines.map((line, index) => (
@@ -186,8 +188,8 @@ function Poem() {
             paddingTop={4}
             fontFamily="mono"
             color="blackAlpha.700"
-            fontSize={"sm"}
             alignItems="flex-start"
+            fontSize={["xs", "sm"]}
           >
             <Text>{data.credits}</Text>
             {data?.summary && <Text>{data.summary}</Text>}

@@ -55,7 +55,7 @@ Output in the following YAML structure:
   poem: |
     <write a great poem about the current weather>
   sky: <describe the daylight and what the sky looks like right now to an observer>
-  credits: This poem was created for you on this <weather condition + time of day> using WeatherKit and GPT-3. Built by @wmdmark who is probably <doing something time/weather appropriate but a bit esoteric> and "prompt engineering." The guy seriously needs to <some sarcastic comment about author>.
+  credits: This poem was created for you on this <weather condition + time of day> using WeatherKit and GPT-3. Built by @wmdmark who, at this hour, is probably <doing something time/weather appropriate but a bit esoteric> and "prompt engineering." The guy seriously needs to <some sarcastic comment about author>.
   summary: <short non-poetic summary of location, time of day, temperature, precipitation>
 
 input:
