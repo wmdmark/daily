@@ -1,46 +1,65 @@
-# Getting Started with Create React App
+https://dev.iachieved.it/iachievedit/weatherkit-rest-api/
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+### JWT
 
-## Available Scripts
+```bash
+openssl pkcs8 -nocrypt -in AuthKey_7W22P92RBD.p8 -out AuthKey_7W22P92RBD.pem
+openssl ec -in AuthKey_7W22P92RBD.pem -pubout > AuthKey_7W22P92RBD.pub
+python3 -c'import time; n=int(time.time()); print("\"iat\": %d," % n); print("\"exp\": %d," % (n+(90 * 24 * 3600)))'
+curl "https://weatherkit.apple.com/api/v1/availability/32.779167/-96.808891?country=US" -H 'Authorization: Bearer <TOKEN>'
 
-In the project directory, you can run:
 
-### `yarn start`
+curl "https://weatherkit.apple.com/api/v1/weather/en_US/32.779167/-96.808891?dataSets=currentWeather" -H 'Authorization: Bearer eyJhbGciOiJFUzI1NiIsImtpZCI6IjdXMjJQOTJSQkQiLCJpZCI6IlRETktTRDczVFUuY29tLndtZG1hcmsud2VhdGhlci1zZXJ2aWNlIiwidHlwIjoiSldUIn0.eyJpc3MiOiJURE5LU0Q3M1RVIiwic3ViIjoiY29tLndtZG1hcmsud2VhdGhlci1zZXJ2aWNlIiwiaWF0IjoxNjc1MzAyODk3LCJleHAiOjE2ODMwNzg4OTd9.85c4uHrrkAXRgY8l-zbqnU--_9TKcJtg_q5mdf6oa0vfglTM1jmI85lNxdWyAasKI4kGIQXEUorra-dCnrqVeg'
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+curl "https://weatherkit.apple.com/api/v1/weather/en/34.8899/-82.4019?dataSets=currentWeather" -H "Authorization: Bearer eyJhbGciOiJFUzI1NiIsImtpZCI6IjdXMjJQOTJSQkQiLCJpZCI6IlRETktTRDczVFUuY29tLndtZG1hcmsud2VhdGhlci1zZXJ2aWNlIiwidHlwIjoiSldUIn0.eyJpc3MiOiJURE5LU0Q3M1RVIiwic3ViIjoiY29tLndtZG1hcmsud2VhdGhlci1zZXJ2aWNlIiwiaWF0IjoxNjc1MzAyODk3LCJleHAiOjE2ODMwNzg4OTd9.85c4uHrrkAXRgY8l-zbqnU--_9TKcJtg_q5mdf6oa0vfglTM1jmI85lNxdWyAasKI4kGIQXEUorra-dCnrqVeg"
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+```
 
-### `yarn test`
+![JWT.io Link](https://jwt.io/#debugger-io?token=eyJhbGciOiJFUzI1NiIsImtpZCI6IjdXMjJQOTJSQkQiLCJpZCI6IlRETktTRDczVFUuY29tLndtZG1hcmsud2VhdGhlci1zZXJ2aWNlIiwidHlwIjoiSldUIn0.eyJpc3MiOiJURE5LU0Q3M1RVIiwic3ViIjoiY29tLndtZG1hcmsud2VhdGhlci1zZXJ2aWNlIiwiaWF0IjoxNjc1MDk5OTA1LCJleHAiOjE2NzUxODYzMDV9.aZrVCNAsS4ZSYmEdtgNnf8Rgv7z92VOPHVPCQpWv7iWEX7Jfylye-j4BNanieSDF3yDCQXMZmWlvkPKLnlhTEA&publicKey=-----BEGIN%20PUBLIC%20KEY-----%0AMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAER4XbWhRud0OPriAvsOlQFZOgS8ZB%0AmJQiQwfkSwPycj0MZDT1s0PTv0222K0fQzDkFdRE%2BXAmBV3gUVQA14%2BNcA%3D%3D%0A-----END%20PUBLIC%20KEY-----)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```
 
-### `yarn build`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Weather conditions
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `yarn eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+- Clear
+- Cloudy
+- Dust
+- Fog
+- Haze
+- MostlyClear
+- MostlyCloudy
+- PartlyCloudy
+- ScatteredThunderstorms
+- Smoke
+- Breezy
+- Windy
+- Drizzle
+- HeavyRain
+- Rain
+- Showers
+- Flurries
+- HeavySnow
+- MixedRainAndSleet
+- MixedRainAndSnow
+- MixedRainfall
+- MixedSnowAndSleet
+- ScatteredShowers
+- ScatteredSnowShowers
+- Sleet
+- Snow
+- SnowShowers
+- Blizzard
+- BlowingSnow
+- FreezingDrizzle
+- FreezingRain
+- Frigid
+- Hail
+- Hot
+- Hurricane
+- IsolatedThunderstorms
+- SevereThunderstorm
+- Thunderstorm
+- Tornado
+- TropicalStorm
+```

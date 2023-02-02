@@ -1,0 +1,50 @@
+functions:
+  path:
+    prompt: |
+      This program generates a learning path from a prompt. 
+      Step verbs are: attend, todo, submit, watch, read, and listen. 
+      Use a variety of appropriate steps to create a compelling and well-designed lesson.
+      Each step should be a single completable action and be outcome focused.
+    input:
+      - prompt
+    output:
+      title: "<Path title>"
+      keywords: "<Path keywords>"
+      description: "<Path description>"
+      lessons:
+        - title: "<Lesson title>"
+          keywords: "<Lesson keywords>"
+          description: "<Lesson description>"
+          steps:
+            - title: "<Step title>"
+              verb: <Step verb>
+              description: "<Step outcome description>"
+            - <More steps>
+        - <More lessons>
+  write:
+    prompt: This suggests additions to text based on context
+    input:
+      - context
+      - text
+    output: <suggest a paragraph of text to continue the input text>
+  list:
+    prompt: "This suggests additions to a list based on the list title and contents"
+    input:
+      - title
+      - contents
+    output:
+      - <suggested items...>
+  ui:
+    prompt: This is a program that create UIs from a prompt
+    input:
+      - available_ui_components
+      - prompt
+    output:
+      ui:
+        element: <component_name>
+        props: <component props>
+        children:
+          - element: <child component name>
+            props: <child element props>
+            children: <child children components if necessary>
+          - <more children as needed>

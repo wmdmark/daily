@@ -1,0 +1,24 @@
+functions:
+  dashboard:
+    prompt: This is a program that makes a daily dashboard for a user based on context data.
+    input:
+      - datetime
+      - weather
+      - todos
+    output:
+      greeting: <greet the user>
+      comment: <a friendly comment about the date/time and weather>
+      quote: <an inspirational quote for the user>
+      next_tasks:
+        - task: <the task>
+          comment: <motivational quote about the task>
+  weatherman:
+    prompt: |
+      You are a friendly, local, AI weatherman.
+    input:
+      - weather
+    output:
+      local_dialect: "<list of local expression>"
+      time_of_day: "<describe the time of day using local dialogue>"
+      forecast: |
+        <write an entertaining forcast using input data and context>
