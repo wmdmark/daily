@@ -1,4 +1,12 @@
-import { Box, Heading, VStack, Text, Spinner, Button } from "@chakra-ui/react"
+import {
+  Box,
+  Heading,
+  VStack,
+  Text,
+  Spinner,
+  Button,
+  HStack,
+} from "@chakra-ui/react"
 import { AnimatePresence, motion } from "framer-motion"
 import { useEffect, useState } from "react"
 import Balancer from "react-wrap-balancer"
@@ -169,6 +177,12 @@ const usePoetry = () => {
     poem: data?.poem,
     credits: data?.credits,
     summary: data?.summary,
+    sky: data?.sky,
+    location: data?.location,
+    weather: data?.weather,
+    mood: data?.mood,
+    poet: data?.poet,
+    done: data?.done,
   }
 }
 
@@ -180,18 +194,20 @@ const Poem = ({ title, poem }) => {
   const poemLines = poem?.split("\n") || []
 
   return (
-    <VStack>
-      <Heading as={Balancer}>{title}</Heading>
-      <Box>
+    <VStack mb={4}>
+      <Heading as={Balancer} size="2xl" fontFamily="'Corben', serif" mb={6}>
+        {title}
+      </Heading>
+      <Box w="full" maxW="80%" margin="0 auto">
         {poemLines.map((line, i) => (
           <Text
             as={motion.div}
             key={i}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            fontSize={["lg", "2xl"]}
+            fontSize={["lg", "xl"]}
             fontFamily={"serif"}
-            lineHeight={[1.5, 2]}
+            lineHeight={[1.5, 1.7]}
           >
             {line}
           </Text>
@@ -207,7 +223,14 @@ const Credits = ({ credits }) => {
   }
 
   return (
-    <VStack fontSize="sm" fontStyle="italic" color="blackAlpha.600">
+    <VStack
+      fontSize="sm"
+      fontStyle="italic"
+      color="blackAlpha.600"
+      borderTop="1px solid"
+      borderColor={"blackAlpha.400"}
+      pt={4}
+    >
       <Text>{credits}</Text>
     </VStack>
   )
@@ -226,7 +249,18 @@ const Summary = ({ summary }) => {
 }
 
 const Poet = () => {
-  const { backgroundImage, title, poem, credits, summary } = usePoetry()
+  const {
+    backgroundImage,
+    sky,
+    location,
+    weather,
+    mood,
+    // poet,
+    title,
+    poem,
+    credits,
+    summary,
+  } = usePoetry()
 
   return (
     <VStack width={"full"} height="100vh" p={[6, 6]}>
@@ -253,26 +287,51 @@ const Poet = () => {
           />
         )}
       </AnimatePresence>
-      {title ? (
-        <VStack
-          pos={"relative"}
-          px={[8, 20]}
-          py={[4, 10]}
-          backgroundColor="whiteAlpha.700"
-          backdropBlur={"40px"}
-          rounded={"xl"}
-          maxW={"container.sm"}
-        >
-          <Poem title={title} poem={poem} />
-          <Credits credits={credits} />
-          <Summary summary={summary} />
-          {/* <Box pos="absolute" top={2} right={2}>
-          <Text>{status}</Text>
-        </Box> */}
-        </VStack>
-      ) : (
-        <Spinner />
-      )}
+
+      <AnimatePresence>
+        {title ? (
+          <VStack
+            as={motion.div}
+            pos={"relative"}
+            px={[8, 20]}
+            py={[4, 10]}
+            backgroundColor="whiteAlpha.700"
+            backdropBlur={"40px"}
+            rounded={"xl"}
+            boxShadow={"lg"}
+            w="full"
+            maxW={"container.sm"}
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 40 }}
+          >
+            <Poem title={title} poem={poem} />
+            <Credits credits={credits} />
+            <Summary summary={summary} />
+          </VStack>
+        ) : (
+          <VStack
+            fontFamily={"mono"}
+            as={motion.div}
+            fontSize={"11px"}
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 40 }}
+            maxW={"container.sm"}
+            w="full"
+          >
+            <HStack>
+              <Spinner size="md" color="gray.500" />
+              <Text>Researching...</Text>
+            </HStack>
+            {sky && <Text>{sky}</Text>}
+            {location && <Text>{location}</Text>}
+            {weather && <Text>{weather}</Text>}
+            {mood && <Text>{mood}</Text>}
+            {/* {poet && <Text>{poet}</Text>} */}
+          </VStack>
+        )}
+      </AnimatePresence>
     </VStack>
   )
 }
@@ -352,7 +411,24 @@ const App = () => {
   const [showPoet, setShowPoet] = useState(false)
 
   return (
-    <VStack w="full" h="100vh" bg="gray.300">
+    <VStack
+      w="full"
+      h="100vh"
+      bg="gray.300"
+      fontFamily={"'EB Garamond', serif"}
+      __css={{
+        WebkitFontSmoothing: "antialiased",
+        h1: {
+          fontFamily: "'Corben', serif",
+        },
+        h2: {
+          fontFamily: "'Corben', serif",
+        },
+        button: {
+          fontFamily: "system-ui",
+        },
+      }}
+    >
       <AnimatePresence>
         {!showPoet && <StartScreen onStart={() => setShowPoet(true)} />}
         {showPoet && <Poet />}
@@ -362,6 +438,10 @@ const App = () => {
             position="fixed"
             bottom={4}
             right={4}
+            bg="whiteAlpha.700"
+            backdropBlur={"40px"}
+            rounded={"xl"}
+            size="sm"
           >
             Restart
           </Button>
