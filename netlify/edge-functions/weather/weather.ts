@@ -50,13 +50,13 @@ const getWeatherPrompt = (input: any) => {
   return `This program takes input and converts it to writing about the weather.
 
 Output in the following YAML structure:
-  sky_color: <HSL color of the most likely sky color given conditions and time of day e.g. hsl(h,s,l)>
+  sky: <describe the daylight and what the sky looks like right now to an observer>
   title: <a poetic artful esoteric title for the poem>
   poem: |
-    <write a great poem about the current weather>
-  sky: <describe the daylight and what the sky looks like right now to an observer>
+    <write a beautiful poem about the current weather in the style of Walt Whitman>
   credits: This poem was created for you on this <weather condition + time of day> using WeatherKit and GPT-3. Built by @wmdmark who, at this hour, is probably <doing something time/weather appropriate but a bit esoteric> and "prompt engineering." The guy seriously needs to <some sarcastic comment about author>.
-  summary: <short non-poetic summary of location, time of day, temperature, precipitation>
+  summary: <short, friendly summary of location, time of day, temperature, precipitation, wind, and any other relevent details>
+  done: true
 
 input:
 ${indentLines(stringify(input))}
@@ -69,92 +69,102 @@ export default async (request: Request, context: Context) => {
   if (request.method === "POST") {
     const data = await request.json()
 
-    const weather = await getWeather(
-      context.geo.latitude!,
-      context.geo.longitude!,
-      context.geo.timezone!
-    )
+    try {
+      const weather = await getWeather(
+        context.geo.latitude!,
+        context.geo.longitude!,
+        context.geo.timezone!
+      )
 
-    const input: any = {}
-    input.timezone = context.geo.timezone
-    input.localTime = data.localDateTime
-    // input.time = weatherInput.current.readTime
-    input.location = {
-      city: context.geo.city,
-      state: context.geo.subdivision?.name,
-      country: context.geo.country?.name,
-    }
-    input.weather = getWeatherInputData(weather)
+      if (!weather) {
+        console.log("No weather data??", weather)
+        throw new Error("No weather data")
+      }
 
-    const prompt = getWeatherPrompt(input)
+      const input: any = {}
+      input.timezone = context.geo.timezone
+      input.localTime = data.localDateTime
+      // input.time = weatherInput.current.readTime
+      input.location = {
+        city: context.geo.city,
+        state: context.geo.subdivision?.name,
+        country: context.geo.country?.name,
+      }
+      input.weather = getWeatherInputData(weather)
 
-    // console.log(prompt)
+      const prompt = getWeatherPrompt(input)
 
-    const payload: any = {
-      model: "text-davinci-003",
-      prompt,
-      temperature: 0.4,
-      top_p: 1,
-      frequency_penalty: 0,
-      presence_penalty: 0,
-      max_tokens: 420,
-      stream: true,
-      n: 1,
-    }
+      // console.log(prompt)
 
-    const readableStream: any = await OpenAIStream(payload)
+      const payload: any = {
+        model: "text-davinci-003",
+        prompt,
+        temperature: 0.4,
+        top_p: 1,
+        frequency_penalty: 0,
+        presence_penalty: 0,
+        max_tokens: 420,
+        stream: true,
+        n: 1,
+      }
 
-    const { readable, writable } = new TransformStream()
+      const readableStream: any = await OpenAIStream(payload)
 
-    // now we want to parse the readable stream and send it to the client
-    let yaml = ""
-    const transform = new TransformStream({
-      transform: (chunk: string, controller) => {
-        const lines = getDataLines(chunk)
-        lines.forEach((line) => {
-          if (line.indexOf("[DONE]") > -1) {
-            controller.enqueue(`data: [DONE]\n\n`)
-          } else {
-            const json: string = line.replace("data: ", "").trim()
-            try {
-              const data = JSON.parse(json)!
-              const tokens = data.choices[0].text
-              if (tokens.indexOf("[DONE]") > -1) {
-                controller.enqueue(`data: [DONE]\n\n`)
-              } else {
-                yaml += tokens
-                try {
-                  const data = parseYaml(yaml)
-                  const msg = `data: ${JSON.stringify(data)}\n\n`
-                  controller.enqueue(msg)
-                } catch {
-                  // console.log("error parsing YAML")
-                  // console.log(yaml)
-                  // we don't care about errors here
-                  // console.log(error)
+      const { readable, writable } = new TransformStream()
+
+      // now we want to parse the readable stream and send it to the client
+      let yaml = ""
+      const transform = new TransformStream({
+        transform: (chunk: string, controller) => {
+          const lines = getDataLines(chunk)
+          lines.forEach((line) => {
+            if (line.indexOf("[DONE]") > -1) {
+              controller.enqueue(`data: [DONE]\n\n`)
+            } else {
+              const json: string = line.replace("data: ", "").trim()
+              try {
+                const data = JSON.parse(json)!
+                const tokens = data.choices[0].text
+                if (tokens.indexOf("[DONE]") > -1) {
+                  controller.enqueue(`data: [DONE]\n\n`)
+                } else {
+                  yaml += tokens
+                  try {
+                    const data = parseYaml(yaml)
+                    const msg = `data: ${JSON.stringify(data)}\n\n`
+                    controller.enqueue(msg)
+                  } catch {
+                    // console.log("error parsing YAML")
+                    // console.log(yaml)
+                    // we don't care about errors here
+                    // console.log(error)
+                  }
                 }
+              } catch (error) {
+                console.log(error)
               }
-            } catch (error) {
-              console.log(error)
             }
-          }
-        })
-      },
-    })
+          })
+        },
+      })
 
-    readableStream
-      .pipeThrough(new TextDecoderStream())
-      .pipeThrough(transform)
-      .pipeThrough(new TextEncoderStream())
-      .pipeTo(writable)
+      readableStream
+        .pipeThrough(new TextDecoderStream())
+        .pipeThrough(transform)
+        .pipeThrough(new TextEncoderStream())
+        .pipeTo(writable)
 
-    return new Response(readable as unknown as BodyInit, {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache",
-      },
-    })
+      return new Response(readable as unknown as BodyInit, {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+        },
+      })
+    } catch (error) {
+      console.log(error)
+      return new Response("Could not get weather", { status: 500 })
+    }
   } else if (request.method === "GET") {
     // TODO: gen an image from Dall-e
     // get the prompt from the url

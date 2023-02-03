@@ -1,16 +1,21 @@
+let retryCount = 0
+
+const delay = (ms: number) => new Promise((res) => setTimeout(res, ms))
+
 export const getWeather = async (
-  lat: string | number,
-  lon: string | number,
+  latitude: string | number,
+  longitude: string | number,
   timezone: string,
   dataSets = [
     "currentWeather",
     // "forecastDaily",
     // "forecastHourly",
-    "forecastNextHour",
+    // "forecastNextHour",
   ]
 ) => {
   const dataSetsParam = dataSets.join(",")
-  const url = `https://weatherkit.apple.com/api/v1/weather/en_US/${lat}/${lon}?dataSets=${dataSetsParam}?timezone=${timezone}`
+  // ?timezone=${timezone}
+  const url = `https://weatherkit.apple.com/api/v1/weather/en_US/${latitude}/${longitude}?dataSets=${dataSetsParam}`
 
   // add the token to your headers
   const token = Deno.env.get("WEATHER_TOKEN")
@@ -18,18 +23,43 @@ export const getWeather = async (
   const config = {
     headers: { Authorization: `Bearer ${token}` },
   }
+  try {
+    let response = await fetch(url, config)
 
-  // console.log(`curl "${url}" -H "Authorization: Bearer ${token}"`)
+    if (response.bodyUsed) {
+      console.log("body already used")
 
-  const response = await fetch(url, config)
+      // can we clone the response?
+      response = response.clone()
+      // now we can read the body again?
+    }
 
-  if (!response.ok) {
-    return new Response("Weather error", { status: 500 })
+    if (!response.ok) {
+      // console.log(`curl "${url}" -H "Authorization: Bearer ${token}"`)
+      throw new Error("WeatherKit error")
+    } else {
+      const weatherData = await response.json()
+      if (Object.keys(weatherData).length === 0) {
+        console.log("got empty weather data?", response)
+        // console.log(`curl "${url}" -H "Authorization: Bearer ${token}"`)
+
+        // try again
+        if (retryCount < 2) {
+          await delay(1000)
+          retryCount++
+          return getWeather(latitude, longitude, timezone, dataSets)
+        } else {
+          throw new Error("WeatherKit error: empty data")
+        }
+      }
+      // console.log("got weather data", weatherData)
+      return weatherData
+    }
+  } catch (e) {
+    console.log(e)
+    // console.log(`curl "${url}" -H "Authorization: Bearer ${token}"`)
+    throw new Error("WeatherKit error")
   }
-
-  const data = await response.json()
-  console.log(data)
-  return data
 }
 export function celsiusToFahrenheit(celsius: number): number {
   return (celsius * 9) / 5 + 32

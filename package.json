@@ -21,6 +21,7 @@
     "react-dom": "^18.2.0",
     "react-hook-geolocation": "^1.1.0",
     "react-scripts": "5.0.1",
+    "react-wrap-balancer": "^0.4.0",
     "typescript": "^4.4.2",
     "web-vitals": "^2.1.0"
   },

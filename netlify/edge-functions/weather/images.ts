@@ -8,7 +8,7 @@ export const getImage = async (prompt: string) => {
     body: JSON.stringify({
       prompt,
       n: 1,
-      size: "512x512",
+      size: "256x256",
     }),
   })
   const result = await response.json()

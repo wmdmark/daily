@@ -9,6 +9,7 @@ import {
 } from "@chakra-ui/react"
 import { AnimatePresence, motion } from "framer-motion"
 import { useEffect, useState } from "react"
+import Balancer from "react-wrap-balancer"
 
 const getLocalDateTime = () => {
   // return the current date and time Thu, Feb 2nd h:MM am/pm"
@@ -33,6 +34,8 @@ const useAIStream = () => {
   let url = "/weather"
 
   const stream = async () => {
+    console.log("streaming...", url)
+
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -44,6 +47,7 @@ const useAIStream = () => {
     })
 
     if (!response.ok) {
+      console.log("Network response was not ok", response)
       throw new Error("Network response was not ok")
     }
 
@@ -106,12 +110,20 @@ const useWeatherImage = () => {
   return { image, loading, load }
 }
 
-function Poem() {
-  const { data, stream, streaming } = useAIStream()
-  const { image, loading, load } = useWeatherImage()
+const preloadImage = async (url: string) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => resolve(img)
+    img.onerror = reject
+    img.src = url
+  })
+}
 
-  const skyDescription = data?.credits?.length > 0 ? data.sky : null
-  const skyColor = data?.title?.length > 0 ? data.sky_color : "gray.500"
+const usePoetry = () => {
+  const { data, stream, streaming } = useAIStream()
+  const { image: imageSrc, loading, load } = useWeatherImage()
+  const [backgroundImage, setBackgroundImage] = useState(null)
+  const [status, setStatus] = useState("creating some ambience...")
 
   useEffect(() => {
     if (streaming || data) {
@@ -120,81 +132,149 @@ function Poem() {
     stream()
   }, [data, streaming, stream])
 
+  // load the background image once data.sky is set
   useEffect(() => {
-    if (skyDescription && !loading && !image) {
-      load(skyDescription)
+    if (!loading && data?.title && !imageSrc) {
+      setStatus("imagining the sky...")
+      load(data.sky).then((img) => {
+        setStatus("get ready to see...")
+        preloadImage(img).then(() => {
+          setBackgroundImage(img)
+        })
+      })
     }
-  }, [skyDescription, loading, load, image])
+  }, [data, loading, imageSrc, load])
 
-  const poemLines = data?.poem?.split("\n") || []
+  useEffect(() => {
+    if (backgroundImage) {
+      setStatus("crafting a poem, just for you...")
+    }
+  }, [backgroundImage])
+
+  useEffect(() => {
+    if (data?.poem && data?.credits?.length > 0 && !data.summary) {
+      setStatus("giving credit where credit is due...")
+    }
+  }, [data])
+
+  useEffect(() => {
+    if (data?.summary) {
+      setStatus("summarizing the actual weather in a less esoteric way...")
+    }
+  }, [data])
+
+  useEffect(() => {
+    if (data?.done === true) {
+      setStatus("The End.")
+    }
+  }, [data])
+
+  return {
+    status,
+    backgroundImage,
+    title: data?.title,
+    poem: data?.poem,
+    credits: data?.credits,
+    summary: data?.summary,
+  }
+}
+
+const Poem = ({ title, poem }) => {
+  if (!title) {
+    return null
+  }
+
+  const poemLines = poem?.split("\n") || []
 
   return (
-    <VStack width={"full"} height="100vh" backgroundColor={skyColor} p={6}>
-      <AnimatePresence>
-        {image && (
-          <Box
+    <VStack>
+      <Heading as={Balancer}>{title}</Heading>
+      <Box>
+        {poemLines.map((line, i) => (
+          <Text
             as={motion.div}
-            width="full"
-            height="full"
+            key={i}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            fontSize="2xl"
+            fontFamily={"serif"}
+            lineHeight="2"
+          >
+            {line}
+          </Text>
+        ))}
+      </Box>
+    </VStack>
+  )
+}
+
+const Credits = ({ credits }) => {
+  if (!credits) {
+    return null
+  }
+
+  return (
+    <VStack fontSize="sm" fontStyle="italic" color="blackAlpha.600">
+      <Text>{credits}</Text>
+    </VStack>
+  )
+}
+
+const Summary = ({ summary }) => {
+  if (!summary) {
+    return null
+  }
+
+  return (
+    <VStack fontSize="sm" fontStyle="italic" color="blackAlpha.600">
+      <Text>{summary}</Text>
+    </VStack>
+  )
+}
+
+const Poet = () => {
+  const { status, backgroundImage, title, poem, credits, summary } = usePoetry()
+
+  return (
+    <VStack width={"full"} height="100vh" p={[6, 6]}>
+      <AnimatePresence>
+        {backgroundImage && (
+          <Box
+            key="background"
             position="fixed"
             top={0}
             left={0}
-            bottom={0}
             right={0}
-            filter="blur(8px)"
-            backgroundImage={`url(${image})`}
+            bottom={0}
+            width="full"
+            height="full"
+            backgroundImage={`url(${backgroundImage})`}
             backgroundSize="cover"
-            backgroundPosition="top center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            backgroundPosition="center"
+            backgroundRepeat="no-repeat"
+            // blur it nad scale it a little
+            __css={{
+              filter: "blur(10px)",
+              transform: "scale(1.4)",
+            }}
           />
         )}
       </AnimatePresence>
-
       <VStack
-        width={"full"}
-        maxW="container.sm"
-        bg="whiteAlpha.800"
-        backdropFilter="auto"
-        backdropBlur={"20px"}
-        rounded="2xl"
-        boxShadow={"2xl"}
-        paddingX={[6, 7, 14]}
-        paddingY={[6, 7, 14]}
+        pos={"relative"}
+        px={[8, 20]}
+        py={[4, 10]}
+        backgroundColor="whiteAlpha.700"
+        backdropBlur={"40px"}
+        rounded={"xl"}
+        maxW={"container.sm"}
       >
-        {data?.title && (
-          <Heading fontFamily={"georgia"} textAlign="center">
-            {data.title}
-          </Heading>
-        )}
-        {data?.poem && (
-          <Text
-            fontSize={["md", "lg", "2xl"]}
-            fontFamily={"georgia"}
-            lineHeight={[8, 9, 10]}
-            w={"85%"}
-            marginX="auto"
-          >
-            {poemLines.map((line, index) => (
-              <Text key={index}>{line}</Text>
-            ))}
-          </Text>
-        )}
-        {data?.credits && (
-          <VStack
-            w="full"
-            borderTop="1px solid #ccc"
-            marginY={4}
-            paddingTop={4}
-            fontFamily="mono"
-            color="blackAlpha.700"
-            alignItems="flex-start"
-            fontSize={["xs", "sm"]}
-          >
-            <Text>{data.credits}</Text>
-            {data?.summary && <Text>{data.summary}</Text>}
-          </VStack>
-        )}
+        <Poem title={title} poem={poem} />
+        <Credits credits={credits} />
+        <Summary summary={summary} />
+        {/* <Box pos="absolute" top={2} right={2}>
+          <Text>{status}</Text>
+        </Box> */}
       </VStack>
     </VStack>
   )
@@ -202,9 +282,10 @@ function Poem() {
 
 const useLocation = () => {
   const [location, setLocation]: any = useState(null)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   const loadLocationData = async () => {
+    console.log("loading location")
     const url = "/weather?location=true"
     setLoading(true)
     const response = await fetch(url, {
@@ -221,7 +302,8 @@ const useLocation = () => {
   }
 
   useEffect(() => {
-    if (!location && !loading) {
+    console.log("load?", { location, loading })
+    if (!location) {
       loadLocationData()
     }
   }, [location, loading])
@@ -229,25 +311,68 @@ const useLocation = () => {
   return { location, loading }
 }
 
-const App = () => {
+const StartScreen = ({ onStart }) => {
   const { location, loading } = useLocation()
-  const [showPoem, setShowPoem] = useState(false)
 
-  if (showPoem) return <Poem />
+  return (
+    <VStack
+      as={motion.div}
+      w="full"
+      maxW={"container.sm"}
+      rounded="2xl"
+      boxShadow={"2xl"}
+      p={6}
+      initial={{ opacity: 0, y: -40 }}
+      animate={{
+        opacity: 1,
+        y: 40,
+        transition: {
+          duration: 0.5,
+        },
+      }}
+    >
+      {loading ? (
+        <Spinner />
+      ) : (
+        <VStack>
+          <Heading>WeatherVerse</Heading>
+          <Box fontFamily={"Georgia"} lineHeight="40px">
+            <Text>Hello, traveler.</Text>
+            <Text>It looks like you are located in</Text>
+            <Text>
+              {location.city}, {location.subdivision} ({location.country})
+            </Text>
+            <Text>
+              Would you like me to write a poem about the current weather where
+              you are?
+            </Text>
+          </Box>
+          <Button onClick={() => onStart()}>Yes, please</Button>
+        </VStack>
+      )}
+    </VStack>
+  )
+}
+
+const App = () => {
+  const [showPoet, setShowPoet] = useState(false)
 
   return (
     <VStack w="full" h="100vh" bg="gray.300">
-      {loading && <Spinner />}
-      {location && (
-        <HStack>
-          <Text>
-            Your location: {location.city}, {location.subdivision}{" "}
-            {location.country}
-          </Text>
-          <Button onClick={() => setShowPoem(true)}>Get your poem</Button>
-        </HStack>
-      )}
-      {showPoem && <Poem />}
+      <AnimatePresence>
+        {!showPoet && <StartScreen onStart={() => setShowPoet(true)} />}
+        {showPoet && <Poet />}
+        {showPoet && (
+          <Button
+            onClick={() => setShowPoet(false)}
+            position="fixed"
+            bottom={4}
+            right={4}
+          >
+            Restart
+          </Button>
+        )}
+      </AnimatePresence>
     </VStack>
   )
 }
