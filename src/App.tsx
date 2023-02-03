@@ -64,9 +64,10 @@ const useAIStream = () => {
       } else {
         try {
           const data = JSON.parse(chunkValue)
+          console.log(JSON.stringify(data, null, 2))
           setData(data)
         } catch (e) {
-          console.log(e)
+          // console.log(e)
         }
       }
     }
@@ -126,7 +127,7 @@ const usePoetry = () => {
 
   // load the background image once data.sky is set
   useEffect(() => {
-    if (!loading && data?.title && !imageSrc) {
+    if (!loading && data?.location && !imageSrc) {
       setStatus("imagining the sky...")
       load(data.sky).then((img) => {
         setStatus("get ready to see...")
@@ -188,9 +189,9 @@ const Poem = ({ title, poem }) => {
             key={i}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            fontSize="2xl"
+            fontSize={["lg", "2xl"]}
             fontFamily={"serif"}
-            lineHeight="2"
+            lineHeight={[1.5, 2]}
           >
             {line}
           </Text>
@@ -252,22 +253,26 @@ const Poet = () => {
           />
         )}
       </AnimatePresence>
-      <VStack
-        pos={"relative"}
-        px={[8, 20]}
-        py={[4, 10]}
-        backgroundColor="whiteAlpha.700"
-        backdropBlur={"40px"}
-        rounded={"xl"}
-        maxW={"container.sm"}
-      >
-        <Poem title={title} poem={poem} />
-        <Credits credits={credits} />
-        <Summary summary={summary} />
-        {/* <Box pos="absolute" top={2} right={2}>
+      {title ? (
+        <VStack
+          pos={"relative"}
+          px={[8, 20]}
+          py={[4, 10]}
+          backgroundColor="whiteAlpha.700"
+          backdropBlur={"40px"}
+          rounded={"xl"}
+          maxW={"container.sm"}
+        >
+          <Poem title={title} poem={poem} />
+          <Credits credits={credits} />
+          <Summary summary={summary} />
+          {/* <Box pos="absolute" top={2} right={2}>
           <Text>{status}</Text>
         </Box> */}
-      </VStack>
+        </VStack>
+      ) : (
+        <Spinner />
+      )}
     </VStack>
   )
 }
@@ -311,8 +316,6 @@ const StartScreen = ({ onStart }) => {
       as={motion.div}
       w="full"
       maxW={"container.sm"}
-      rounded="2xl"
-      boxShadow={"2xl"}
       p={6}
       initial={{ opacity: 0, y: -40 }}
       animate={{
@@ -329,17 +332,12 @@ const StartScreen = ({ onStart }) => {
         <VStack>
           <Heading>WeatherVerse</Heading>
           <Box fontFamily={"Georgia"} lineHeight="40px">
-            <Text>Hello, traveler.</Text>
             <Text>It looks like you are located in</Text>
             <Text>
               {location.city}, {location.subdivision} ({location.country})
             </Text>
-            <Text>
-              Would you like me to write a poem about the current weather where
-              you are?
-            </Text>
           </Box>
-          <Button onClick={() => onStart()}>Yes, please</Button>
+          <Button onClick={() => onStart()}>Write me a poem</Button>
         </VStack>
       )}
     </VStack>

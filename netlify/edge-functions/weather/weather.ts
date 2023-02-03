@@ -47,13 +47,16 @@ const indentLines = (lines: string) => {
 }
 
 const getWeatherPrompt = (input: any) => {
-  return `This program takes input and converts it to writing about the weather.
+  return `This program takes input about the time, weather and location, and writes a poem.
 
 Output in the following YAML structure:
   sky: <describe the daylight and what the sky looks like right now to an observer>
+  location: <describe the state and city style and tone>
+  mood: <describe the mood of the weather and the city>
+  poet: <the best poet to write a poem about the location and mood>
   title: <a poetic artful esoteric title for the poem>
   poem: |
-    <write a beautiful poem about the current weather in the style of Walt Whitman>
+    <a beautiful poem about the weather, locaiton, and sky by the poet>
   credits: This poem was created for you on this <weather condition + time of day> using WeatherKit and GPT-3. Built by @wmdmark who, at this hour, is probably <doing something time/weather appropriate but a bit esoteric> and "prompt engineering." The guy seriously needs to <some sarcastic comment about author>.
   summary: <short, friendly summary of location, time of day, temperature, precipitation, wind, and any other relevent details>
   done: true

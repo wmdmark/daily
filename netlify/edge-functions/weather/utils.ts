@@ -35,7 +35,8 @@ export const getWeather = async (
     }
 
     if (!response.ok) {
-      // console.log(`curl "${url}" -H "Authorization: Bearer ${token}"`)
+      console.log(`curl "${url}" -H "Authorization: Bearer ${token}"`)
+      console.log("got error response", response.status, response.statusText)
       throw new Error("WeatherKit error")
     } else {
       const weatherData = await response.json()
