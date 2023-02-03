@@ -52,11 +52,12 @@ const getWeatherPrompt = (input: any) => {
 Output in the following YAML structure:
   sky: <describe the daylight and what the sky looks like right now to an observer>
   location: <describe the state and city style and tone>
+  weather: <describe the weather and temperature>
   mood: <describe the mood of the weather and the city>
   poet: <the best poet to write a poem about the location and mood>
   title: <a poetic artful esoteric title for the poem>
   poem: |
-    <a beautiful poem about the weather, locaiton, and sky by the poet>
+    <a high quality poem about the weather, location, mood, and sky by the poet>
   credits: This poem was created for you on this <weather condition + time of day> using WeatherKit and GPT-3. Built by @wmdmark who, at this hour, is probably <doing something time/weather appropriate but a bit esoteric> and "prompt engineering." The guy seriously needs to <some sarcastic comment about author>.
   summary: <short, friendly summary of location, time of day, temperature, precipitation, wind, and any other relevent details>
   done: true

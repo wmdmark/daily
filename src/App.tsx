@@ -325,13 +325,17 @@ const StartScreen = ({ onStart }) => {
           duration: 0.5,
         },
       }}
+      exit={{
+        opacity: 0,
+        y: -40,
+      }}
     >
       {loading ? (
         <Spinner />
       ) : (
         <VStack>
           <Heading>WeatherVerse</Heading>
-          <Box fontFamily={"Georgia"} lineHeight="40px">
+          <Box fontFamily={"Georgia"} lineHeight="40px" textAlign={"center"}>
             <Text>It looks like you are located in</Text>
             <Text>
               {location.city}, {location.subdivision} ({location.country})
