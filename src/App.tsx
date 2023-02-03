@@ -125,12 +125,18 @@ const usePoetry = () => {
   const { image: imageSrc, loading, load } = useWeatherImage()
   const [backgroundImage, setBackgroundImage] = useState(null)
   const [status, setStatus] = useState("creating some ambience...")
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     if (streaming || data) {
       return
     }
-    stream()
+    try {
+      stream()
+    } catch (e: any) {
+      console.log(e)
+      setError(e)
+    }
   }, [data, streaming, stream])
 
   // load the background image once data.sky is set
@@ -171,6 +177,7 @@ const usePoetry = () => {
   }, [data])
 
   return {
+    error,
     status,
     backgroundImage,
     title: data?.title,
@@ -255,6 +262,7 @@ const Poet = () => {
     location,
     weather,
     mood,
+    error,
     // poet,
     title,
     poem,
@@ -332,6 +340,15 @@ const Poet = () => {
           </VStack>
         )}
       </AnimatePresence>
+      {error && (
+        <VStack>
+          <Text color="red.600">
+            Oops, something went wrong trying to get the weather. Sorry about
+            that, this happens sometimes. Try refreshing your browser and
+            starting again.
+          </Text>
+        </VStack>
+      )}
     </VStack>
   )
 }
