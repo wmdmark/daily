@@ -231,6 +231,7 @@ const Credits = ({ credits }) => {
 
   return (
     <VStack
+      w="full"
       fontSize="sm"
       fontStyle="italic"
       color="blackAlpha.600"
@@ -249,7 +250,7 @@ const Summary = ({ summary }) => {
   }
 
   return (
-    <VStack fontSize="sm" fontStyle="italic" color="blackAlpha.600">
+    <VStack w="full" fontSize="sm" fontStyle="italic" color="blackAlpha.600">
       <Text>{summary}</Text>
     </VStack>
   )
