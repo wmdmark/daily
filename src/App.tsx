@@ -1,12 +1,4 @@
-import {
-  Box,
-  Heading,
-  VStack,
-  Text,
-  Spinner,
-  Button,
-  HStack,
-} from "@chakra-ui/react"
+import { Box, Heading, VStack, Text, Spinner, Button } from "@chakra-ui/react"
 import { AnimatePresence, motion } from "framer-motion"
 import { useEffect, useState } from "react"
 import Balancer from "react-wrap-balancer"
@@ -233,7 +225,7 @@ const Summary = ({ summary }) => {
 }
 
 const Poet = () => {
-  const { status, backgroundImage, title, poem, credits, summary } = usePoetry()
+  const { backgroundImage, title, poem, credits, summary } = usePoetry()
 
   return (
     <VStack width={"full"} height="100vh" p={[6, 6]}>
