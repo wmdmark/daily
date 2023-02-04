@@ -51,9 +51,7 @@ const getWeatherPrompt = (input: any) => {
 
 Output in the following YAML structure:
   sky: <describe the daylight and what the sky looks like right now to an observer>
-  location: <describe the state and city style and tone>
-  weather: <describe the weather and temperature>
-  mood: <describe the mood of the weather and the city>
+  preamble: <write a short summary of the location, time of day, weather and mood>.
   poet: <the best poet to write a poem about the location and mood>
   title: <a poetic artful esoteric title for the poem>
   poem: |
@@ -69,136 +67,160 @@ output (YAML):
 `
 }
 
-export default async (request: Request, context: Context) => {
-  if (request.method === "POST") {
-    const data = await request.json()
+const handleAIStream = async (request: Request, context: Context) => {
+  const data = await request.json()
 
-    try {
-      const weather = await getWeather(
-        context.geo.latitude!,
-        context.geo.longitude!,
-        context.geo.timezone!
-      )
+  try {
+    const weather = await getWeather(
+      context.geo.latitude!,
+      context.geo.longitude!,
+      context.geo.timezone!
+    )
 
-      if (!weather) {
-        console.log("No weather data??", weather)
-        throw new Error("No weather data")
-      }
+    if (!weather) {
+      console.log("No weather data??", weather)
+      throw new Error("No weather data")
+    }
 
-      const input: any = {}
-      input.timezone = context.geo.timezone
-      input.localTime = data.localDateTime
-      // input.time = weatherInput.current.readTime
-      input.location = {
-        city: context.geo.city,
-        state: context.geo.subdivision?.name,
-        country: context.geo.country?.name,
-      }
-      input.weather = getWeatherInputData(weather)
+    const input: any = {}
+    input.timezone = context.geo.timezone
+    input.localTime = data.localDateTime
+    // input.time = weatherInput.current.readTime
+    input.location = {
+      city: context.geo.city,
+      state: context.geo.subdivision?.name,
+      country: context.geo.country?.name,
+    }
+    input.weather = getWeatherInputData(weather)
 
-      const prompt = getWeatherPrompt(input)
+    const prompt = getWeatherPrompt(input)
 
-      // console.log(prompt)
+    // console.log(prompt)
 
-      const payload: any = {
-        model: "text-davinci-003",
-        prompt,
-        temperature: 0.4,
-        top_p: 1,
-        frequency_penalty: 0,
-        presence_penalty: 0,
-        max_tokens: 420,
-        stream: true,
-        n: 1,
-      }
+    const payload: any = {
+      model: "text-davinci-003",
+      prompt,
+      temperature: 0.4,
+      top_p: 1,
+      frequency_penalty: 0,
+      presence_penalty: 0,
+      max_tokens: 420,
+      stream: true,
+      n: 1,
+    }
 
-      const readableStream: any = await OpenAIStream(payload)
+    const readableStream: any = await OpenAIStream(payload)
 
-      const { readable, writable } = new TransformStream()
+    const { readable, writable } = new TransformStream()
 
-      // now we want to parse the readable stream and send it to the client
-      let yaml = ""
-      const transform = new TransformStream({
-        transform: (chunk: string, controller) => {
-          const lines = getDataLines(chunk)
-          lines.forEach((line) => {
-            if (line.indexOf("[DONE]") > -1) {
-              controller.enqueue(`data: [DONE]\n\n`)
-            } else {
-              const json: string = line.replace("data: ", "").trim()
-              try {
-                const data = JSON.parse(json)!
-                const tokens = data.choices[0].text
-                if (tokens.indexOf("[DONE]") > -1) {
-                  controller.enqueue(`data: [DONE]\n\n`)
-                } else {
-                  yaml += tokens
-                  try {
-                    const data = parseYaml(yaml)
-                    const msg = `data: ${JSON.stringify(data)}\n\n`
-                    controller.enqueue(msg)
-                  } catch {
-                    // console.log("error parsing YAML")
-                    // console.log(yaml)
-                    // we don't care about errors here
-                    // console.log(error)
-                  }
+    // now we want to parse the readable stream and send it to the client
+    let yaml = ""
+    const transform = new TransformStream({
+      transform: (chunk: string, controller) => {
+        const lines = getDataLines(chunk)
+        lines.forEach((line) => {
+          if (line.indexOf("[DONE]") > -1) {
+            controller.enqueue(`data: [DONE]\n\n`)
+          } else {
+            const json: string = line.replace("data: ", "").trim()
+            try {
+              const data = JSON.parse(json)!
+              const tokens = data.choices[0].text
+              if (tokens.indexOf("[DONE]") > -1) {
+                controller.enqueue(`data: [DONE]\n\n`)
+              } else {
+                yaml += tokens
+                try {
+                  const data = parseYaml(yaml)
+                  const msg = `data: ${JSON.stringify(data)}\n\n`
+                  controller.enqueue(msg)
+                } catch {
+                  // console.log("error parsing YAML")
+                  // console.log(yaml)
+                  // we don't care about errors here
+                  // console.log(error)
                 }
-              } catch (error) {
-                console.log(error)
               }
+            } catch (error) {
+              console.log(error)
             }
-          })
-        },
-      })
+          }
+        })
+      },
+    })
 
-      readableStream
-        .pipeThrough(new TextDecoderStream())
-        .pipeThrough(transform)
-        .pipeThrough(new TextEncoderStream())
-        .pipeTo(writable)
+    readableStream
+      .pipeThrough(new TextDecoderStream())
+      .pipeThrough(transform)
+      .pipeThrough(new TextEncoderStream())
+      .pipeTo(writable)
 
-      return new Response(readable as unknown as BodyInit, {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Content-Type": "text/event-stream",
-          "Cache-Control": "no-cache",
-        },
-      })
-    } catch (error) {
-      console.log(error)
-      return new Response("Could not get weather", { status: 500 })
-    }
-  } else if (request.method === "GET") {
-    // TODO: gen an image from Dall-e
-    // get the prompt from the url
-    const url = new URL(request.url)
-    if (url.searchParams.get("img")) {
-      const prompt = url.searchParams.get("img")
-      const contextPrompt = `A beautiful sky image, highly realistic, smooth, ambient. ${prompt} 5k cinematic still.`
-      const result = await getImage(contextPrompt)
-      if (!result) {
-        return new Response("No image found", { status: 404 })
-      }
-      return new Response(JSON.stringify(result), {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Content-Type": "application/json",
-        },
-      })
-    } else if (url.searchParams.get("location")) {
-      const location = {
-        city: context.geo.city,
-        subdivision: context.geo.subdivision?.name,
-        country: context.geo.country?.name,
-      }
-
-      return new Response(JSON.stringify(location), {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Content-Type": "application/json",
-        },
-      })
-    }
+    return new Response(readable as unknown as BodyInit, {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+      },
+    })
+  } catch (error) {
+    console.log(error)
+    return new Response("Could not get weather", { status: 500 })
   }
+}
+
+const handleGetRequest = async (request: Request, context: Context) => {
+  // TODO: gen an image from Dall-e
+  // get the prompt from the url
+  const url = new URL(request.url)
+  if (url.searchParams.get("img")) {
+    const prompt = url.searchParams.get("img")
+    const contextPrompt = `A beautiful sky image, highly realistic, smooth, ambient. ${prompt} 5k cinematic still.`
+    const result = await getImage(contextPrompt)
+    if (!result) {
+      return new Response("No image found", { status: 404 })
+    }
+    return new Response(JSON.stringify(result), {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Content-Type": "application/json",
+      },
+    })
+  } else if (url.searchParams.get("location")) {
+    const location = {
+      city: context.geo.city,
+      subdivision: context.geo.subdivision?.name,
+      country: context.geo.country?.name,
+    }
+
+    return new Response(JSON.stringify(location), {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Content-Type": "application/json",
+      },
+    })
+  } else if (url.searchParams.get("lat") && url.searchParams.get("lng")) {
+    const lat = url.searchParams.get("lat")!
+    const lng = url.searchParams.get("lng")!
+    const result = await getWeather(lat, lng, context.geo.timezone!)
+
+    if (!result.ok) {
+      return new Response("Could not load weather", { status: result.status })
+    }
+
+    return new Response(JSON.stringify(result), {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Content-Type": "application/json",
+      },
+    })
+  }
+}
+
+export default (request: Request, context: Context) => {
+  if (request.method === "POST") {
+    return handleAIStream(request, context)
+  } else if (request.method === "GET") {
+    return handleGetRequest(request, context)
+  }
+  return new Response("Not found", { status: 404 })
 }

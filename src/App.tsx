@@ -6,6 +6,7 @@ import {
   Spinner,
   Button,
   HStack,
+  Center,
 } from "@chakra-ui/react"
 import { AnimatePresence, motion } from "framer-motion"
 import { useEffect, useState } from "react"
@@ -185,9 +186,7 @@ const usePoetry = () => {
     credits: data?.credits,
     summary: data?.summary,
     sky: data?.sky,
-    location: data?.location,
-    weather: data?.weather,
-    mood: data?.mood,
+    preamble: data?.preamble,
     poet: data?.poet,
     done: data?.done,
   }
@@ -232,7 +231,7 @@ const Credits = ({ credits }) => {
   return (
     <VStack
       w="full"
-      fontSize="sm"
+      fontSize="md"
       fontStyle="italic"
       color="blackAlpha.600"
       borderTop="1px solid"
@@ -250,7 +249,7 @@ const Summary = ({ summary }) => {
   }
 
   return (
-    <VStack w="full" fontSize="sm" fontStyle="italic" color="blackAlpha.600">
+    <VStack w="full" fontSize="md" fontStyle="italic" color="blackAlpha.600">
       <Text>{summary}</Text>
     </VStack>
   )
@@ -260,19 +259,23 @@ const Poet = () => {
   const {
     backgroundImage,
     sky,
-    location,
-    weather,
-    mood,
     error,
     // poet,
     title,
+    preamble,
     poem,
     credits,
     summary,
   } = usePoetry()
 
   return (
-    <VStack width={"full"} height="100vh" p={[6, 6]}>
+    <Center
+      width={"full"}
+      alignItems={["flex-start", "center"]}
+      height="100vh"
+      p={[6, 6]}
+      pos="relative"
+    >
       <AnimatePresence>
         {backgroundImage && (
           <Box
@@ -334,10 +337,7 @@ const Poet = () => {
               <Text>Researching...</Text>
             </HStack>
             {sky && <Text>{sky}</Text>}
-            {location && <Text>{location}</Text>}
-            {weather && <Text>{weather}</Text>}
-            {mood && <Text>{mood}</Text>}
-            {/* {poet && <Text>{poet}</Text>} */}
+            {preamble && <Text>{preamble}</Text>}
           </VStack>
         )}
       </AnimatePresence>
@@ -350,7 +350,7 @@ const Poet = () => {
           </Text>
         </VStack>
       )}
-    </VStack>
+    </Center>
   )
 }
 
@@ -429,7 +429,7 @@ const App = () => {
   const [showPoet, setShowPoet] = useState(false)
 
   return (
-    <VStack
+    <Center
       w="full"
       h="100vh"
       bg="gray.300"
@@ -465,7 +465,7 @@ const App = () => {
           </Button>
         )}
       </AnimatePresence>
-    </VStack>
+    </Center>
   )
 }
 

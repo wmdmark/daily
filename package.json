@@ -29,6 +29,7 @@
     "semi": false
   },
   "scripts": {
+    "dev": "netlify dev",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
