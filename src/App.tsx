@@ -31,6 +31,7 @@ const getLocalDateTime = () => {
 const useAIStream = () => {
   const [streaming, setStreaming] = useState(false)
   const [data, setData]: any = useState(null)
+  const [error, setError] = useState<string>("")
 
   let url = "/weather"
 
@@ -49,7 +50,9 @@ const useAIStream = () => {
 
     if (!response.ok) {
       console.log("Network response was not ok", response)
-      throw new Error("Network response was not ok")
+      setError(response.statusText)
+      setStreaming(false)
+      return
     }
 
     const data = response.body
@@ -85,7 +88,7 @@ const useAIStream = () => {
     reader.releaseLock()
   }
 
-  return { data, stream, streaming }
+  return { data, error, stream, streaming }
 }
 
 const useWeatherImage = () => {
@@ -122,22 +125,16 @@ const preloadImage = async (url: string) => {
 }
 
 const usePoetry = () => {
-  const { data, stream, streaming } = useAIStream()
+  const { data, stream, error, streaming } = useAIStream()
   const { image: imageSrc, loading, load } = useWeatherImage()
   const [backgroundImage, setBackgroundImage] = useState(null)
   const [status, setStatus] = useState("creating some ambience...")
-  const [error, setError] = useState(null)
 
   useEffect(() => {
     if (streaming || data) {
       return
     }
-    try {
-      stream()
-    } catch (e: any) {
-      console.log(e)
-      setError(e)
-    }
+    stream()
   }, [data, streaming, stream])
 
   // load the background image once data.sky is set
@@ -207,13 +204,11 @@ const Poem = ({ title, poem }) => {
       <Box w="full" maxW="80%" margin="0 auto">
         {poemLines.map((line, i) => (
           <Text
-            as={motion.div}
+            as={Balancer}
             key={i}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            fontSize={["lg", "xl"]}
+            fontSize={["xl", "xl"]}
             fontFamily={"serif"}
-            lineHeight={[1.5, 1.7]}
+            mb={4}
           >
             {line}
           </Text>
@@ -269,13 +264,7 @@ const Poet = () => {
   } = usePoetry()
 
   return (
-    <VStack
-      width={"full"}
-      alignItems={["flex-start", "center"]}
-      height="100vh"
-      p={[6, 6]}
-      pos="relative"
-    >
+    <VStack width={"full"} height="100vh" p={[6, 6]} pos="relative">
       <AnimatePresence>
         {backgroundImage && (
           <Box
@@ -331,7 +320,7 @@ const Poet = () => {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 40 }}
-            maxW={"container.sm"}
+            maxW={"300px"}
             w="full"
           >
             <HStack>
@@ -347,8 +336,9 @@ const Poet = () => {
         <VStack>
           <Text color="red.600">
             Oops, something went wrong trying to get the weather. Sorry about
-            that, this happens sometimes. Try refreshing your browser and
-            starting again.
+            that, this happens sometimes trying to contact the weather service.
+            Try refreshing your browser and starting again.
+            <Button onClick={() => window.location.reload()}>Refresh</Button>
           </Text>
         </VStack>
       )}
