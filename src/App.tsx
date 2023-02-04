@@ -269,7 +269,7 @@ const Poet = () => {
   } = usePoetry()
 
   return (
-    <Center
+    <VStack
       width={"full"}
       alignItems={["flex-start", "center"]}
       height="100vh"
@@ -303,6 +303,7 @@ const Poet = () => {
       <AnimatePresence>
         {title ? (
           <VStack
+            key="poem"
             as={motion.div}
             pos={"relative"}
             px={[8, 20]}
@@ -323,6 +324,7 @@ const Poet = () => {
           </VStack>
         ) : (
           <VStack
+            key="loading"
             fontFamily={"mono"}
             as={motion.div}
             fontSize={"11px"}
@@ -334,9 +336,9 @@ const Poet = () => {
           >
             <HStack>
               <Spinner size="md" color="gray.500" />
-              <Text>Researching...</Text>
+              <Text>Preparing...</Text>
             </HStack>
-            {sky && <Text>{sky}</Text>}
+            {/* {sky && <Text>{sky}</Text>} */}
             {preamble && <Text>{preamble}</Text>}
           </VStack>
         )}
@@ -350,7 +352,7 @@ const Poet = () => {
           </Text>
         </VStack>
       )}
-    </Center>
+    </VStack>
   )
 }
 
@@ -429,7 +431,7 @@ const App = () => {
   const [showPoet, setShowPoet] = useState(false)
 
   return (
-    <Center
+    <VStack
       w="full"
       h="100vh"
       bg="gray.300"
@@ -448,10 +450,13 @@ const App = () => {
       }}
     >
       <AnimatePresence>
-        {!showPoet && <StartScreen onStart={() => setShowPoet(true)} />}
-        {showPoet && <Poet />}
+        {!showPoet && (
+          <StartScreen key="start" onStart={() => setShowPoet(true)} />
+        )}
+        {showPoet && <Poet key="poet" />}
         {showPoet && (
           <Button
+            key="restart"
             onClick={() => setShowPoet(false)}
             position="fixed"
             bottom={4}
@@ -465,7 +470,7 @@ const App = () => {
           </Button>
         )}
       </AnimatePresence>
-    </Center>
+    </VStack>
   )
 }
 
