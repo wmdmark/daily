@@ -6,7 +6,7 @@ import {
   Spinner,
   Button,
   HStack,
-  Center,
+  Spacer,
 } from "@chakra-ui/react"
 import { AnimatePresence, motion } from "framer-motion"
 import { useEffect, useState } from "react"
@@ -139,7 +139,7 @@ const usePoetry = () => {
 
   // load the background image once data.sky is set
   useEffect(() => {
-    if (!loading && data?.location && !imageSrc) {
+    if (!loading && data?.preamble && !imageSrc) {
       setStatus("imagining the sky...")
       load(data.sky).then((img) => {
         setStatus("get ready to see...")
@@ -194,18 +194,19 @@ const Poem = ({ title, poem }) => {
     return null
   }
 
-  const poemLines = poem?.split("\n") || []
+  const poemLines = poem?.split("\n").filter((l) => l.length > 1) || []
+
+  console.log(poemLines)
 
   return (
-    <VStack mb={4}>
+    <VStack mb={4} w="full">
       <Heading as={Balancer} size="2xl" fontFamily="'Corben', serif" mb={6}>
         {title}
       </Heading>
       <Box w="full" maxW="80%" margin="0 auto">
         {poemLines.map((line, i) => (
           <Text
-            as={Balancer}
-            key={i}
+            key={`line-${i}`}
             fontSize={["xl", "xl"]}
             fontFamily={"serif"}
             mb={4}
@@ -244,18 +245,27 @@ const Summary = ({ summary }) => {
   }
 
   return (
-    <VStack w="full" fontSize="md" fontStyle="italic" color="blackAlpha.600">
+    <Box w="full" fontSize="md" fontStyle="italic" color="blackAlpha.600">
       <Text>{summary}</Text>
-    </VStack>
+    </Box>
+  )
+}
+
+const PoemReader = ({ poem }) => {
+  return (
+    <Box pb={4} w="full" display="flex" justifyContent={"center"}>
+      <audio controls>
+        <source src={`/weather?say=${poem}`} type="audio/mpeg" />
+      </audio>
+    </Box>
   )
 }
 
 const Poet = () => {
   const {
     backgroundImage,
-    sky,
     error,
-    // poet,
+    done,
     title,
     preamble,
     poem,
@@ -264,7 +274,16 @@ const Poet = () => {
   } = usePoetry()
 
   return (
-    <VStack width={"full"} height="100vh" p={[6, 6]} pos="relative">
+    <VStack
+      as={motion.div}
+      width={"full"}
+      height="100vh"
+      p={[6, 6]}
+      pos="relative"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
       <AnimatePresence>
         {backgroundImage && (
           <Box
@@ -300,16 +319,23 @@ const Poet = () => {
             backgroundColor="whiteAlpha.700"
             backdropBlur={"40px"}
             rounded={"xl"}
-            boxShadow={"lg"}
+            boxShadow={"xl"}
             w="full"
             maxW={"container.sm"}
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, filter: "blur(10px)" }}
+            animate={{ opacity: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, filter: "blur(10px)" }}
+            alignItems="flex-start"
           >
             <Poem title={title} poem={poem} />
-            <Credits credits={credits} />
-            <Summary summary={summary} />
+
+            {credits && <PoemReader poem={title + "\n" + poem} />}
+
+            <Box w="full" textAlign={"left"}>
+              <Credits credits={credits} />
+              <Spacer h={4} />
+              <Summary summary={summary} />
+            </Box>
           </VStack>
         ) : (
           <VStack
@@ -317,9 +343,9 @@ const Poet = () => {
             fontFamily={"mono"}
             as={motion.div}
             fontSize={"11px"}
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, filter: "blur(10px)" }}
+            animate={{ opacity: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, filter: "blur(10px)" }}
             maxW={"300px"}
             w="full"
           >
@@ -386,17 +412,17 @@ const StartScreen = ({ onStart }) => {
       w="full"
       maxW={"container.sm"}
       p={6}
-      initial={{ opacity: 0, y: -40 }}
+      initial={{ opacity: 0, filter: "blur(20px)" }}
       animate={{
         opacity: 1,
-        y: 40,
+        filter: "blur(0px)",
         transition: {
           duration: 0.5,
         },
       }}
       exit={{
+        filter: "blur(20px)",
         opacity: 0,
-        y: -40,
       }}
     >
       {loading ? (
