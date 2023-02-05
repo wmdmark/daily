@@ -58,7 +58,7 @@ Output in the following YAML structure:
   title: <a poetic title for the poem>
   poem: |
     <a high quality poem about the weather, location, mood, and sky by the poet>
-  credits: This poem was created for you on this <weather condition + time of day> using WeatherKit (weather data), DALL-E 2 (background image), GPT-3 (writing) and IIElevenLabs (speech). Built by @wmdmark who, at this hour, is probably <doing something time/weather appropriate but a bit esoteric> and "prompt engineering." The guy seriously needs to <some sarcastic comment about author>.
+  credits: This poem was generated for you on this <weather condition + time of day> using WeatherKit (weather data), DALL-E 2 (background image), GPT-3 (writing) and IIElevenLabs (speech). Built by @wmdmark who, at this hour, is probably <doing something time/weather appropriate but a bit esoteric> and "prompt engineering." The guy seriously needs to <some sarcastic comment about author>.
   summary: <short, friendly summary of location, time of day, temperature, precipitation, wind, and any other relevent details>
   done: true
 

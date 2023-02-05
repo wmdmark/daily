@@ -50,7 +50,7 @@ const useAIStream = () => {
 
     if (!response.ok) {
       console.log("Network response was not ok", response)
-      setError(response.statusText)
+      setError(`Error getting weather data: ${response.statusText}`)
       setStreaming(false)
       return
     }
