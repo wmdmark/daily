@@ -350,7 +350,8 @@ const Poet = () => {
           </VStack>
         )}
       </AnimatePresence>
-      {error && (
+      {/* TODO: only show this if there is an error and a certain amount of time has passed */}
+      {/* {error && (
         <VStack>
           <Text color="red.600">
             Oops, something went wrong trying to get the weather. Sorry about
@@ -359,7 +360,7 @@ const Poet = () => {
             <Button onClick={() => window.location.reload()}>Refresh</Button>
           </Text>
         </VStack>
-      )}
+      )} */}
     </VStack>
   )
 }
