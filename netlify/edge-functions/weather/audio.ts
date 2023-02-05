@@ -21,8 +21,6 @@ export const getVoiceStream = async (
     text: text,
   }
 
-  console.log("url", url, { headers, body })
-
   const response = await fetch(url, {
     method: "POST",
     headers: headers,

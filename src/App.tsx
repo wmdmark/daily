@@ -262,16 +262,8 @@ const PoemReader = ({ poem }) => {
 }
 
 const Poet = () => {
-  const {
-    backgroundImage,
-    error,
-    done,
-    title,
-    preamble,
-    poem,
-    credits,
-    summary,
-  } = usePoetry()
+  const { backgroundImage, error, title, preamble, poem, credits, summary } =
+    usePoetry()
 
   return (
     <VStack
