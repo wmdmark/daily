@@ -6,13 +6,14 @@ import {
 } from "https://deno.land/std@0.99.0/encoding/yaml.ts"
 import { getImage } from "./images.ts"
 import { getVoiceStream } from "./audio.ts"
+import { cacheByLocationAndTime, getCachedData, getCacheKey } from "./cache.ts"
 
 if (!Deno.env.get("OPENAI_API_KEY")) {
   throw new Error("Missing env var from OpenAI")
 }
 
 const OpenAIStream = async (payload: any) => {
-  const url = "https://api.openai.com/v1/completions"
+  const url = "https://api.openai.com/v1/chat/completions"
   const headers = {
     "Content-Type": "application/json",
     Authorization: `Bearer ${Deno.env.get("OPENAI_API_KEY")}`,
@@ -47,40 +48,36 @@ const indentLines = (lines: string) => {
     .join("\n")
 }
 
-const getWeatherPrompt = (input: any) => {
-  return `This program takes input about the time, weather and location, and writes a poem.
+const getWeatherPrompt = () => {
+  return `You are a program takes input about the time, weather and location, and writes a poem.
 
 Output in the following YAML structure:
   sky: <describe the sky looks like right now to an observer right now>
   preamble: <write a short summary of the location, time of day, weather, and mood>.
   poet: <the best poet to write a poem about the location, weather, and mood>
-  delay: one two three four five <count to twenty>
   title: <a poetic title for the poem>
+  author: <the author of the poem>
   poem: |
     <a high quality poem about the weather, location, mood, and sky by the poet>
-  credits: This poem was generated for you on this <weather condition + time of day> using WeatherKit (weather data), DALL-E 2 (background image), GPT-3 (writing) and IIElevenLabs (speech). Built by @wmdmark who, at this hour, is probably <doing something time/weather appropriate but a bit esoteric> and "prompt engineering." The guy seriously needs to <some sarcastic comment about author>.
-  summary: <short, friendly summary of location, time of day, temperature, precipitation, wind, and any other relevent details>
+  credits: This poem was generated for you on this <weather condition + time of day> using WeatherKit (weather data), DALL-E 2 (background image), GPT-3.5-turbo (writing). Built by @wmdmark who, at this hour, is probably <doing something time/weather appropriate but a bit esoteric> and "prompt engineering." The guy seriously needs to <some sarcastic comment about author>.
+  summary: |
+    <short, friendly summary of location, time of day, temperature, precipitation, wind, and any other relevent details>
   done: true
-
-input:
-${indentLines(stringify(input))}
-
-output (YAML):
 `
 }
 
 const handleAIStream = async (request: Request, context: Context) => {
   const data = await request.json()
+  let result: any = {}
 
   try {
-    const weather = await getWeather(
+    result.weather = await getWeather(
       context.geo.latitude!,
       context.geo.longitude!,
       context.geo.timezone!
     )
 
-    if (!weather) {
-      console.log("No weather data??", weather)
+    if (!result) {
       throw new Error("No weather data")
     }
 
@@ -93,20 +90,25 @@ const handleAIStream = async (request: Request, context: Context) => {
       state: context.geo.subdivision?.name,
       country: context.geo.country?.name,
     }
-    input.weather = getWeatherInputData(weather)
+    input.weather = getWeatherInputData(result.weather)
 
-    const prompt = getWeatherPrompt(input)
+    const prompt = getWeatherPrompt()
+
+    const messages = [
+      { role: "system", content: prompt },
+      { role: "user", content: stringify(input) + "\noutput:" },
+    ]
 
     // console.log(prompt)
 
     const payload: any = {
-      model: "text-davinci-003",
-      prompt,
-      temperature: 0.4,
+      model: "gpt-3.5-turbo",
+      messages,
+      temperature: 0.5,
       top_p: 1,
       frequency_penalty: 0,
       presence_penalty: 0,
-      max_tokens: 420,
+      max_tokens: 640,
       stream: true,
       n: 1,
     }
@@ -117,34 +119,34 @@ const handleAIStream = async (request: Request, context: Context) => {
 
     // now we want to parse the readable stream and send it to the client
     let yaml = ""
+    let gptResult: any = {}
     const transform = new TransformStream({
       transform: (chunk: string, controller) => {
         const lines = getDataLines(chunk)
         lines.forEach((line) => {
           if (line.indexOf("[DONE]") > -1) {
+            result = { ...result, ...gptResult }
+            // cacheByLocationAndTime(context, result)
             controller.enqueue(`data: [DONE]\n\n`)
           } else {
             const json: string = line.replace("data: ", "").trim()
             try {
               const data = JSON.parse(json)!
-              const tokens = data.choices[0].text
-              if (tokens.indexOf("[DONE]") > -1) {
-                controller.enqueue(`data: [DONE]\n\n`)
-              } else {
-                yaml += tokens
-                try {
-                  const data = parseYaml(yaml)
-                  const msg = `data: ${JSON.stringify(data)}\n\n`
-                  controller.enqueue(msg)
-                } catch {
-                  // console.log("error parsing YAML")
-                  // console.log(yaml)
-                  // we don't care about errors here
-                  // console.log(error)
-                }
+              const tokens = data.choices[0].delta.content
+              yaml += tokens
+              // console.log(yaml)
+              try {
+                gptResult = parseYaml(yaml)
+                const msg = `data: ${JSON.stringify(gptResult)}\n\n`
+                controller.enqueue(msg)
+              } catch {
+                // console.log("error parsing YAML")
+                // console.log(yaml)
+                // we don't care about errors here
+                // console.log(error)
               }
             } catch (error) {
-              console.log(error)
+              // console.log(error)
             }
           }
         })
@@ -177,6 +179,7 @@ const handleGetRequest = async (request: Request, context: Context) => {
   if (url.searchParams.get("img")) {
     const prompt = url.searchParams.get("img")
     const contextPrompt = `A beautiful sky image, highly realistic, smooth, ambient. ${prompt} 5k cinematic still.`
+    console.log(contextPrompt)
     const result = await getImage(contextPrompt)
     if (!result) {
       return new Response("No image found", { status: 404 })
@@ -188,13 +191,36 @@ const handleGetRequest = async (request: Request, context: Context) => {
       },
     })
   } else if (url.searchParams.get("location")) {
+    const key = getCacheKey(context)
+    const cacheData: any = await getCachedData(context)
+
     const location = {
       city: context.geo.city,
       subdivision: context.geo.subdivision?.name,
       country: context.geo.country?.name,
     }
 
-    return new Response(JSON.stringify(location), {
+    // gonna try and fetch the weather here to see if it helps w/ the errors?
+    let weather: any = {}
+    try {
+      weather = await getWeather(
+        context.geo.latitude!,
+        context.geo.longitude!,
+        context.geo.timezone!
+      )
+    } catch (error) {
+      console.log(error)
+      weather.error = error.toString()
+    }
+
+    const result = {
+      key,
+      location,
+      cacheData,
+      weather,
+    }
+
+    return new Response(JSON.stringify(result), {
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Content-Type": "application/json",
