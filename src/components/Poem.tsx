@@ -13,7 +13,7 @@ export const Poem = ({ title, poem }) => {
       {title.length > 4 && (
         <Heading
           as={Balancer}
-          size="3xl"
+          size={["2xl", "3xl"]}
           fontFamily="'ivypresto-display', serif"
           fontWeight={700}
           color="blackAlpha.800"
@@ -26,7 +26,7 @@ export const Poem = ({ title, poem }) => {
         {poemLines.map((line, i) => (
           <Text
             key={`line-${i}`}
-            fontSize={["xl", "xl"]}
+            fontSize={["xl", "2xl"]}
             fontFamily={"serif"}
             fontWeight={400}
             mb={4}

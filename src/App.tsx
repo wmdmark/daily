@@ -19,10 +19,10 @@ const App = () => {
       fontFamily={"system-ui"}
       __css={{
         WebkitFontSmoothing: "antialiased",
-        p: {
-          fontSize: "1.2rem",
-          fontFamily: "serif",
-        },
+        // p: {
+        //   fontSize: "1.2rem",
+        //   fontFamily: "serif",
+        // },
         h1: {
           fontFamily: "'ivypresto-display', serif",
         },

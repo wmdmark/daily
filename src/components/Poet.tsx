@@ -7,7 +7,7 @@ const Poet = ({ style }) => {
   const { backgroundImage, title, poem, credits, summary } = usePoetry()
 
   return (
-    <VStack width={"full"} p={[6, 6]} pos="relative" height={"full"}>
+    <VStack width={"full"} p={[4, 6]} pos="relative" height={"full"}>
       <AnimatePresence>
         {backgroundImage && (
           <Box
@@ -33,9 +33,6 @@ const Poet = ({ style }) => {
             // }}
           />
         )}
-      </AnimatePresence>
-
-      <AnimatePresence>
         {title ? (
           <VStack
             key="poem"
@@ -43,8 +40,8 @@ const Poet = ({ style }) => {
             pos={"relative"}
             px={[8, 20]}
             py={[4, 10]}
-            backgroundColor="whiteAlpha.700"
-            backdropBlur={"40px"}
+            backgroundColor="whiteAlpha.800"
+            backdropBlur={"10px"}
             rounded={"md"}
             boxShadow={"xl"}
             w="full"
@@ -75,7 +72,6 @@ const Poet = ({ style }) => {
             exit={{ opacity: 0, filter: "blur(10px)" }}
             maxW={"300px"}
             w="full"
-            h="100vh"
           >
             <HStack>
               <Spinner size="md" color="gray.500" />
