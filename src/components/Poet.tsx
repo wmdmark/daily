@@ -26,13 +26,10 @@ const Poet = ({ style }) => {
             backgroundRepeat="no-repeat"
             initial={{ opacity: 0, filter: "blur(20px)", scale: 1.7 }}
             animate={{ opacity: 1, filter: "blur(10px)", scale: 1.4 }}
-            // // blur it nad scale it a little
-            // __css={{
-            //   filter: "blur(10px)",
-            //   transform: "scale(1.4)",
-            // }}
           />
         )}
+      </AnimatePresence>
+      <AnimatePresence mode="wait">
         {title ? (
           <VStack
             key="poem"
@@ -72,6 +69,9 @@ const Poet = ({ style }) => {
             exit={{ opacity: 0, filter: "blur(10px)" }}
             maxW={"300px"}
             w="full"
+            h="100vh"
+            alignItems="center"
+            justifyContent="center"
           >
             <HStack>
               <Spinner size="md" color="gray.500" />
