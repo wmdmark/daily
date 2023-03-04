@@ -49,22 +49,29 @@ const indentLines = (lines: string) => {
 }
 
 const getWeatherPrompt = () => {
-  return `You are a program takes input about the time, weather and location, and writes a poem.
+  return `You are a program takes input about the time, weather and location, and writes an original poem in the stayle of a poet.
 
 Output in the following YAML structure:
+  season: <spring|summer|fall|winter>
+  location: <description of the location>
+  temperature: <hot|warm|cool|cold|freezing>
+  time_of_day: <early morning|morning|early afternoon|afternoon|late afternoon|early evening|evening|night|late night>
+  conditions: <clear|rain|snow|sleet|hail|drizzle|fog|mist|smoke|dust|sand|ash|squalls|tornado>
   sky: <describe the sky looks like right now to an observer right now>
-  preamble: <write a short summary of the location, time of day, weather, and mood>.
-  poet: <the best poet to write a poem about the location, weather, and mood>
-  title: <a poetic title for the poem>
-  author: <the author of the poem>
+  title: <a nice title for the poem>
   poem: |
-    <a high quality poem about the weather, location, mood, and sky by the poet>
+    <an elegent, high quality, original poem about the weather conditions, location, mood, and sky>
   credits: This poem was generated for you on this <weather condition + time of day> using WeatherKit (weather data), DALL-E 2 (background image), GPT-3.5-turbo (writing). Built by @wmdmark who, at this hour, is probably <doing something time/weather appropriate but a bit esoteric> and "prompt engineering." The guy seriously needs to <some sarcastic comment about author>.
-  summary: |
-    <short, friendly summary of location, time of day, temperature, precipitation, wind, and any other relevent details>
   done: true
 `
 }
+
+/*
+  poet_style: <the best poet to write a poem about the location, weather, and mood>
+
+  summary: |
+    <short, friendly summary of location, time of day, temperature, precipitation, wind, and any other relevent details>
+*/
 
 const handleAIStream = async (request: Request, context: Context) => {
   const data = await request.json()
