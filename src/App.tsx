@@ -1,4 +1,4 @@
-import { VStack, Button, HStack, Text, Link, Box } from "@chakra-ui/react"
+import { VStack, Button, Text, Link, Box } from "@chakra-ui/react"
 import { AnimatePresence } from "framer-motion"
 import { useState } from "react"
 import Poet from "./components/Poet"

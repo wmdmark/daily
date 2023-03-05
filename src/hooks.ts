@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-import { URL } from "url"
 import useAIStream from "./useAIStream"
 import { preloadImage } from "./utils"
 
@@ -71,8 +70,12 @@ export const usePoetry = () => {
   }, [data, streaming, stream])
 
   // load the background image once data.sky is set
+
+  const shouldLoadBackgroundImage =
+    !loading && !imageSrc && data?.style_of && !!data?.style_of
+
   useEffect(() => {
-    if (!loading && !imageSrc && data?.style_of && data?.sky) {
+    if (shouldLoadBackgroundImage) {
       setStatus("imagining the sky...")
       load(data.sky).then((img) => {
         setStatus("get ready to see...")
@@ -81,7 +84,7 @@ export const usePoetry = () => {
         })
       })
     }
-  }, [data, loading, imageSrc, load])
+  }, [shouldLoadBackgroundImage, data, load])
 
   useEffect(() => {
     if (backgroundImage) {
