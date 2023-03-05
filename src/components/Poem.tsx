@@ -8,12 +8,15 @@ export const Poem = ({ title, poem }) => {
 
   const poemLines = poem?.split("\n").filter((l) => l.length > 1) || []
 
+  // render the title with non-breaking spaces
+  // title = title.split(" ").join("\u00a0")
+
   return (
     <VStack mb={4} w="full">
       {title.length > 4 && (
         <Heading
           as={Balancer}
-          size={["3xl"]}
+          fontSize={`40px`}
           fontFamily="'ivypresto-display', serif"
           fontWeight={700}
           color="blackAlpha.800"
