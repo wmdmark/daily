@@ -59,7 +59,7 @@ output (YAML):
   title: <a nice title for the poem>
   poem: |
     <an elegent, high quality, original poem about the weather conditions, location, mood, and sky>
-  credits: This poem was generated for you on this <weather condition + time of day> using WeatherKit (weather data), DALL-E 2 (background image), GPT-3.5-turbo (writing). Built by @wmdmark who, at this hour, is probably <doing something time/weather appropriate but a bit esoteric> and "prompt engineering." The guy seriously needs to <some sarcastic comment about author>.
+  credits: This poem was generated just for you on this <weather condition + time of day> using WeatherKit, DALL-E 2, & OpenAI. Built by @wmdmark who, at this hour, is probably <doing something time/weather appropriate but a bit esoteric> and "prompt engineering." The guy seriously needs to <some sarcastic comment about author>.
   done: true
 `
 }
