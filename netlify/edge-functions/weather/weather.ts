@@ -51,13 +51,11 @@ const indentLines = (lines: string) => {
 const getWeatherPrompt = () => {
   return `You are a program takes input about the time, weather and location, and writes an original poem in the stayle of a poet.
 
-Output in the following YAML structure:
-  season: <spring|summer|fall|winter>
-  location: <description of the location>
-  temperature: <hot|warm|cool|cold|freezing>
-  time_of_day: <early morning|morning|early afternoon|afternoon|late afternoon|early evening|evening|night|late night>
-  conditions: <clear|rain|snow|sleet|hail|drizzle|fog|mist|smoke|dust|sand|ash|squalls|tornado>
-  sky: <describe the sky looks like right now to an observer right now>
+output (YAML):
+  setting: a <hot|warm|cool|cold|freezing> <early morning|morning|early afternoon|afternoon|late afternoon|early evening|evening|night|late night> in  <description of the location> in the <spring|summer|fall|winter>
+  precipitation: <clear|rain|snow|sleet|hail|drizzle|fog|mist|smoke|dust|sand|ash|squalls|tornado>
+  sky: <a scientific description of what the sky looks like given the setting, time and precipitation>
+  style_of: <poet 1> and <poet 2>
   title: <a nice title for the poem>
   poem: |
     <an elegent, high quality, original poem about the weather conditions, location, mood, and sky>

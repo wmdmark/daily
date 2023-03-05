@@ -35,7 +35,7 @@ const Poet = ({ style }) => {
             key="poem"
             as={motion.div}
             pos={"relative"}
-            px={[8, 20]}
+            px={[8, 10]}
             py={[4, 10]}
             backgroundColor="whiteAlpha.800"
             backdropBlur={"10px"}

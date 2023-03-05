@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { URL } from "url"
 import useAIStream from "./useAIStream"
 import { preloadImage } from "./utils"
 
@@ -7,8 +8,10 @@ export const useWeatherImage = () => {
   let [loading, setLoading] = useState(false)
 
   const load = async (prompt: string) => {
+    if (loading) return
     setLoading(true)
     let url = "/weather?img=" + prompt
+    console.log(url)
     const response = await fetch(url, {
       method: "GET",
       headers: {
@@ -69,7 +72,7 @@ export const usePoetry = () => {
 
   // load the background image once data.sky is set
   useEffect(() => {
-    if (!loading && data?.preamble && !imageSrc) {
+    if (!loading && !imageSrc && data?.style_of && data?.sky) {
       setStatus("imagining the sky...")
       load(data.sky).then((img) => {
         setStatus("get ready to see...")
