@@ -16,7 +16,7 @@ export const Poem = ({ title, poem }) => {
       {title.length > 4 && (
         <Heading
           as={Balancer}
-          fontSize={`40px`}
+          fontSize={["40px", "48px"]}
           fontFamily="'ivypresto-display', serif"
           fontWeight={700}
           color="blackAlpha.800"
