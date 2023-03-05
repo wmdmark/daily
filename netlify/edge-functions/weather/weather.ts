@@ -109,7 +109,7 @@ const handleAIStream = async (request: Request, context: Context) => {
     const payload: any = {
       model: "gpt-3.5-turbo",
       messages,
-      temperature: 0.5,
+      temperature: 0.55,
       top_p: 1,
       frequency_penalty: 0,
       presence_penalty: 0,
@@ -138,10 +138,13 @@ const handleAIStream = async (request: Request, context: Context) => {
             try {
               const data = JSON.parse(json)!
               const tokens = data.choices[0].delta.content
-              yaml += tokens
+              if (tokens) {
+                yaml += tokens
+              }
               // console.log(yaml)
               try {
                 gptResult = parseYaml(yaml)
+                // console.log(yaml)
                 const msg = `data: ${JSON.stringify(gptResult)}\n\n`
                 controller.enqueue(msg)
               } catch {
