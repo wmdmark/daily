@@ -13,7 +13,7 @@ export const Poem = ({ title, poem }) => {
       {title.length > 4 && (
         <Heading
           as={Balancer}
-          size={["2xl", "3xl"]}
+          size={["3xl"]}
           fontFamily="'ivypresto-display', serif"
           fontWeight={700}
           color="blackAlpha.800"
