@@ -54,7 +54,7 @@ const getWeatherPrompt = () => {
 output (YAML):
   setting: a <hot|warm|cool|cold|freezing> <early morning|morning|early afternoon|afternoon|late afternoon|early evening|evening|night|late night> in  <description of the location> in the <spring|summer|fall|winter>
   precipitation: <clear|rain|snow|sleet|hail|drizzle|fog|mist|smoke|dust|sand|ash|squalls|tornado>
-  sky: <a scientific description of what the sky looks like given the setting, time and precipitation>
+  sky: <a literal description of what the sky looks like given the setting, time and precipitation>
   style_of: <poet 1> and <poet 2>
   title: <a nice title for the poem>
   poem: |
